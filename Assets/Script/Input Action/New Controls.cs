@@ -24,7 +24,7 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
     ""name"": ""New Controls"",
     ""maps"": [
         {
-            ""name"": ""Anywhere"",
+            ""name"": ""Controls"",
             ""id"": ""ec2cda9d-8502-47a7-a1d6-14f61f81f158"",
             ""actions"": [
                 {
@@ -41,10 +41,10 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e7e9ce14-a355-455d-b4aa-8424552b4992"",
-                    ""path"": ""<Gamepad>/leftStick"",
+                    ""path"": ""<Gamepad>/rightStick"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""Gamepad"",
                     ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -55,7 +55,7 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
                     ""path"": ""<Mouse>/position"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""KBM"",
                     ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -63,11 +63,39 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
             ]
         }
     ],
-    ""controlSchemes"": []
+    ""controlSchemes"": [
+        {
+            ""name"": ""Gamepad"",
+            ""bindingGroup"": ""Gamepad"",
+            ""devices"": [
+                {
+                    ""devicePath"": ""<Gamepad>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""KBM"",
+            ""bindingGroup"": ""KBM"",
+            ""devices"": [
+                {
+                    ""devicePath"": ""<Keyboard>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                },
+                {
+                    ""devicePath"": ""<Mouse>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                }
+            ]
+        }
+    ]
 }");
-        // Anywhere
-        m_Anywhere = asset.FindActionMap("Anywhere", throwIfNotFound: true);
-        m_Anywhere_Aim = m_Anywhere.FindAction("Aim", throwIfNotFound: true);
+        // Controls
+        m_Controls = asset.FindActionMap("Controls", throwIfNotFound: true);
+        m_Controls_Aim = m_Controls.FindAction("Aim", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -126,52 +154,70 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
         return asset.FindBinding(bindingMask, out action);
     }
 
-    // Anywhere
-    private readonly InputActionMap m_Anywhere;
-    private List<IAnywhereActions> m_AnywhereActionsCallbackInterfaces = new List<IAnywhereActions>();
-    private readonly InputAction m_Anywhere_Aim;
-    public struct AnywhereActions
+    // Controls
+    private readonly InputActionMap m_Controls;
+    private List<IControlsActions> m_ControlsActionsCallbackInterfaces = new List<IControlsActions>();
+    private readonly InputAction m_Controls_Aim;
+    public struct ControlsActions
     {
         private @NewControls m_Wrapper;
-        public AnywhereActions(@NewControls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Aim => m_Wrapper.m_Anywhere_Aim;
-        public InputActionMap Get() { return m_Wrapper.m_Anywhere; }
+        public ControlsActions(@NewControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Aim => m_Wrapper.m_Controls_Aim;
+        public InputActionMap Get() { return m_Wrapper.m_Controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(AnywhereActions set) { return set.Get(); }
-        public void AddCallbacks(IAnywhereActions instance)
+        public static implicit operator InputActionMap(ControlsActions set) { return set.Get(); }
+        public void AddCallbacks(IControlsActions instance)
         {
-            if (instance == null || m_Wrapper.m_AnywhereActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_AnywhereActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_ControlsActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_ControlsActionsCallbackInterfaces.Add(instance);
             @Aim.started += instance.OnAim;
             @Aim.performed += instance.OnAim;
             @Aim.canceled += instance.OnAim;
         }
 
-        private void UnregisterCallbacks(IAnywhereActions instance)
+        private void UnregisterCallbacks(IControlsActions instance)
         {
             @Aim.started -= instance.OnAim;
             @Aim.performed -= instance.OnAim;
             @Aim.canceled -= instance.OnAim;
         }
 
-        public void RemoveCallbacks(IAnywhereActions instance)
+        public void RemoveCallbacks(IControlsActions instance)
         {
-            if (m_Wrapper.m_AnywhereActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_ControlsActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
-        public void SetCallbacks(IAnywhereActions instance)
+        public void SetCallbacks(IControlsActions instance)
         {
-            foreach (var item in m_Wrapper.m_AnywhereActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_ControlsActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_AnywhereActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_ControlsActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
-    public AnywhereActions @Anywhere => new AnywhereActions(this);
-    public interface IAnywhereActions
+    public ControlsActions @Controls => new ControlsActions(this);
+    private int m_GamepadSchemeIndex = -1;
+    public InputControlScheme GamepadScheme
+    {
+        get
+        {
+            if (m_GamepadSchemeIndex == -1) m_GamepadSchemeIndex = asset.FindControlSchemeIndex("Gamepad");
+            return asset.controlSchemes[m_GamepadSchemeIndex];
+        }
+    }
+    private int m_KBMSchemeIndex = -1;
+    public InputControlScheme KBMScheme
+    {
+        get
+        {
+            if (m_KBMSchemeIndex == -1) m_KBMSchemeIndex = asset.FindControlSchemeIndex("KBM");
+            return asset.controlSchemes[m_KBMSchemeIndex];
+        }
+    }
+    public interface IControlsActions
     {
         void OnAim(InputAction.CallbackContext context);
     }
