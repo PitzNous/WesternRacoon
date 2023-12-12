@@ -1613,7 +1613,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isGamepad: 0
-  cursorSpeed: 1000
+  cursorSpeed: 2500
   playerInput: {fileID: 977625017}
   cursorTransform: {fileID: 373641515}
   canvaTransform: {fileID: 482235861}

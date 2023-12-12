@@ -55,7 +55,7 @@
                     "path": "<Mouse>/position",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Gamepad;KBM",
+                    "groups": "KBM",
                     "action": "Aim",
                     "isComposite": false,
                     "isPartOfComposite": false
