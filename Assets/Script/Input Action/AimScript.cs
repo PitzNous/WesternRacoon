@@ -73,22 +73,23 @@ public class AimScript : MonoBehaviour
     {
         //Vector2 aim = controlsScript.Controls.Aim.ReadValue<Vector2>();
 
+        Vector2 deltaValue = Gamepad.current.rightStick.ReadValue();
+        deltaValue *= cursorSpeed * Time.deltaTime;
+
+        Vector2 currentPos = virtualMouse.position.ReadValue();
+        Vector2 newPos = currentPos + deltaValue;
+
+        newPos.x = Mathf.Clamp(newPos.x, 0, Screen.width);
+        newPos.y = Mathf.Clamp(newPos.y, 0, Screen.height);
+
+        InputState.Change(virtualMouse.position, newPos);
+        InputState.Change(virtualMouse.delta, deltaValue);
+
+        AnchorCursor(newPos);
 
         if (isGamepad)
         {
-            Vector2 deltaValue = Gamepad.current.rightStick.ReadValue();
-            deltaValue *= cursorSpeed * Time.deltaTime;
 
-            Vector2 currentPos = virtualMouse.position.ReadValue();
-            Vector2 newPos = currentPos + deltaValue;
-
-            newPos.x = Mathf.Clamp(newPos.x, 0, Screen.width);
-            newPos.y = Mathf.Clamp(newPos.y, 0, Screen.height);
-
-            InputState.Change(virtualMouse.position, newPos);
-            InputState.Change(virtualMouse.delta, deltaValue);
-
-            AnchorCursor(newPos);
 
             //aim = aim.normalized;
         }
@@ -99,10 +100,10 @@ public class AimScript : MonoBehaviour
 
     }
 
-    private void AnchorCursor(Vector2 position)
+    private void AnchorCursor(Vector2 lastposition)
     {
         Vector2 anchoredPosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvaTransform, position, canvas.renderMode 
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvaTransform, lastposition, canvas.renderMode 
             == RenderMode.ScreenSpaceOverlay ? null : Camera.main, out anchoredPosition);
 
         cursorTransform.anchoredPosition = anchoredPosition;
